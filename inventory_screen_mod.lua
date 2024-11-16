@@ -201,6 +201,7 @@ function TryAddAlertItem(ev)
 	local bagnum = api.Cursor:GetCursorPickedBagItemIndex()
 	--api.Log:Info(tostring(bagnum))
 	if bagnum == 0 then
+		ClearAlertItem(ev)
 		return
 	end
 	local bagitem = api.Bag:GetBagItemInfo(1, bagnum)
@@ -222,6 +223,7 @@ function TryAddAlertItem(ev)
 end
 
 function OnClickAlertItem(ev, clicktype)
+	--api.Log:Info(tostring(clicktype))
 	if clicktype == "RightButton" then
 		ClearAlertItem(ev)
 		return
@@ -237,6 +239,7 @@ for i = 0, 9 do
 		alertItemWnd.items[num] = addIcon(alertItemWnd, i, k)
 
 		alertItemWnd.items[num]:SetHandler("OnClick", OnClickAlertItem)
+		
 		alertItemWnd.items[num]:SetHandler("OnDragReceive", TryAddAlertItem)
 		
 		if charsettings.filter[num].itemType ~= nil then

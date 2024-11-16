@@ -11,7 +11,7 @@ local dawnsdrop_addon = {
   name = "Dawnsdrop Check",
   author = "Delarme",
   desc = "Checks if you have dawnsdrop equipped",
-  version = "1.4.4"
+  version = "1.4.5"
 }
 
 local defaultX = 330
