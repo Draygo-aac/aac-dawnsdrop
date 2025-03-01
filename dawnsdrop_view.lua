@@ -1,9 +1,12 @@
-dawnscanvas = api.Interface:CreateEmptyWindow("DawnsdropCheck", "UIParent")
---dawnscanvas:AddAnchor("TOPLEFT", "UIParent", 330, 20)
-dawnscanvas:SetExtent(20 + (46 * 7), windowheight)
+dawnscanvas = api.Interface:CreateEmptyWindow("DawnsdropCheck") -- , "UIParent"
+dawnscanvas:AddAnchor("TOPLEFT", "UIParent", 330, 20)
+local windowheight = 54
+--20 + (46 * 7)
+dawnscanvas:SetExtent(342, windowheight)
 
 
 function dawnscanvas:SetWndPosition(x, y)
+    dawnscanvas:RemoveAllAnchors()
     dawnscanvas:AddAnchor("TOPLEFT", "UIParent", x, y)
 end
 function addIcon(dawnscanvas, num)
@@ -51,6 +54,8 @@ end
 
 function dawnscanvas:OnDragStop()
   dawnscanvas:StopMovingOrSizing()
+
+  
   local x, y = dawnscanvas:GetOffset()
 
   api.Cursor:ClearCursor()

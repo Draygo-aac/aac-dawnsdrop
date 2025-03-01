@@ -11,7 +11,7 @@ local dawnsdrop_addon = {
   name = "Dawnsdrop Check",
   author = "Delarme",
   desc = "Checks if you have dawnsdrop equipped",
-  version = "1.4.5"
+  version = "1.4.6"
 }
 
 local defaultX = 330
@@ -226,6 +226,7 @@ function LoadData()
 	if res == true then
 		return settingsdata
 	end
+    api.Log:Err(settingsdata)
 	return nil
 end
 
@@ -239,50 +240,34 @@ end
 local function UpdatePos(x, y)
 
 
-    settings.WinX = x
-    settings.WinY = y
+    settings.WinX = math.floor(x)
+    settings.WinY = math.floor(y)
 
+    dawnscanvas:SetWndPosition(settings.WinX, settings.WinY)
     SaveData(settings)
+    --api.Log:Info(settings)
 end
 
 
 local function Load() 
   
     api.Log:Info("Loading dawnsdrop check...")
-    oldsettings = api.GetSettings("dawnsdrop")
     settings = LoadData()
     dawnscanvas = require("dawnsdrop/dawnsdrop_view")
-
+    
     if settings == nil then
         settings = {}
-        if oldsettings == nil then
-            settings.WinX = defaultX
-            settings.WinY = defaultY
-        else
-
-            if oldsettings.WinX ~= nil then
-                settings.WinX = oldsettings.WinX
-            else
-                settings.WinX = defaultX
-            end
-            
-            if oldsettings.WinY ~= nil then
-                settings.WinY = oldsettings.WinY
-            else
-                settings.WinY = defaultY
-            end
-
-        end
-
     end
+
     if settings.WinX == nil then
         settings.WinX = defaultX
     end
     if settings.WinY == nil then
         settings.WinY = defaultY
     end
-
-    dawnscanvas:SetWndPosition(settings.WinX, settings.WinY)
+    --if UI Scaling is in effect we cannot set this in load must wait for first UPDATE
+    -- AGURU PLEASE
+    --dawnscanvas:SetWndPosition(settings.WinX, settings.WinY)
 
     dawnscanvas:SetOnDragStopEvent(UpdatePos)
     dawnscanvas:SetHandler("OnEvent", OnEvent)
@@ -297,6 +282,15 @@ local function Load()
     invscreen.alertItemWnd.updateCallback = HudUpdate
 
     HudUpdate()
+end
+local first = true
+local function OnUpdate()
+    --for some reason if UI Scaling is in effect we cannot scale it in Load()
+    if first then
+        first = false
+        dawnscanvas:SetWndPosition(settings.WinX, settings.WinY)
+    end
+
 end
 
 
@@ -315,7 +309,7 @@ local function Unload()
        invscreen:CloseAddon()
     end
 end
-
+api.On("UPDATE", OnUpdate)
 -- Here we make sure to bind the functions we defined to our addon. This is how the game knows what function to use!
 dawnsdrop_addon.OnLoad = Load
 dawnsdrop_addon.OnUnload = Unload
