@@ -5,6 +5,89 @@ checkButton = require('dawnsdrop/util/check_button')
 
 settings = api.GetSettings("dawnsdrop")
 
+ALERT_BUTTTONSKIN = {
+	drawableType = "drawable",
+	path = "ui/button/mailbox.dds",
+	coords = {
+		normal = {
+			0,
+			66,
+			32,
+			32
+		},
+		over = {
+			33,
+			66,
+			32,
+			32
+		},
+		click = {
+			65,
+			66,
+			32,
+			32
+		},
+		disable = {
+			97,
+			66,
+			32,
+			32
+		}
+	},
+	width = 40,
+	height = 40
+}
+local btnColor = {
+    normal = {
+    ConvertColor(209),
+    ConvertColor(192),
+    ConvertColor(172),
+    1
+    },
+    highlight = {
+    ConvertColor(233),
+    ConvertColor(197),
+    ConvertColor(155),
+    1
+    },
+    pushed = {
+    ConvertColor(200),
+    ConvertColor(168),
+    ConvertColor(129),
+    1
+    },
+    disabled = {
+    ConvertColor(120),
+    ConvertColor(120),
+    ConvertColor(120),
+    1
+    }
+}
+
+
+
+function CreateTooltipDrawable(widget)
+  local bg = widget:CreateNinePartDrawable(TEXTURE_PATH.HUD, "background")
+  bg:AddAnchor("TOPLEFT", widget, 0, -7)
+  bg:AddAnchor("BOTTOMRIGHT", widget, 0, -3)
+  bg:SetCoords(733, 169, 14, 15)
+  bg:SetInset(7, 7, 6, 7)
+  widget.bg = bg
+end
+
+function CreateTooltip(widget, text)
+	local label = widget:CreateChildWidget("label", "toolTip", 0, true)
+	label:SetText(text)
+	label.style:SetAlign(1)
+	CreateTooltipDrawable(label)
+	label:SetHeight(FONT_SIZE.LARGE + 14)
+	label:SetWidth(label.style:GetTextWidth(text) + 14)
+	ApplyTextColor(label, btnColor.normal)
+	label:AddAnchor("BOTTOM", widget, "TOP", 0, 4)
+	widget.tooltip = label
+	label:Show(false)
+end
+
 function LoadFile()
 
 	local uid = api.Unit:GetUnitId("player")
@@ -86,17 +169,32 @@ if inventory.alertItemsBtn ~= nil then
 	--api.Log:Info("Alert button already loaded")
 	alertItemsBtn = inventory.alertItemsBtn
 end
-
+if inventory.alertItemsBtn ~= nil then
+	inventory.alertItemsBtn:Show(false)
+	inventory.alertItemsBtn = nil
+end
 
 if inventory.alertItemsBtn == nil then
 	alertItemsBtn = inventory:CreateChildWidget("button", "alertitemsButton", 0, true)
 	inventory.alertItemsBtn = alertItemsBtn
 end
 inventory.alertItemsBtn:RemoveAllAnchors()
-inventory.alertItemsBtn:SetText("Alert Items")
+--inventory.alertItemsBtn:SetText("Alert Items")
 
-api.Interface:ApplyButtonSkin(inventory.alertItemsBtn, BUTTON_BASIC.DEFAULT)
-inventory.alertItemsBtn:AddAnchor("BOTTOMLEFT", inventory, 245, -21)
+api.Interface:ApplyButtonSkin(inventory.alertItemsBtn, ALERT_BUTTTONSKIN)
+--inventory.alertItemsBtn.info = "Alert Items"
+CreateTooltip(inventory.alertItemsBtn, "Alert Items")
+function inventory.alertItemsBtn:OnEnter()
+	self.tooltip:Show(true)
+end
+inventory.alertItemsBtn:SetHandler("OnEnter", inventory.alertItemsBtn.OnEnter)
+function inventory.alertItemsBtn:OnLeave()
+	self.tooltip:Show(false)
+end
+inventory.alertItemsBtn:SetHandler("OnLeave", inventory.alertItemsBtn.OnLeave)
+--inventory.alertItemsBtn:SetTooltip("Alert Items")
+--api.Interface:ApplyButtonSkin(inventory.alertItemsBtn, BUTTON_BASIC.DEFAULT)
+inventory.alertItemsBtn:AddAnchor("BOTTOMLEFT", inventory, 242, -18)
 
 function alertItemsBtn:SetCallback(delegate)
 	--api.Log:Info("SetCallback")

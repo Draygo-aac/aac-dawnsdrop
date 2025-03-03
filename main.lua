@@ -11,7 +11,7 @@ local dawnsdrop_addon = {
   name = "Dawnsdrop Check",
   author = "Delarme",
   desc = "Checks if you have dawnsdrop equipped",
-  version = "1.4.6"
+  version = "1.5"
 }
 
 local defaultX = 330
@@ -285,12 +285,11 @@ local function Load()
 end
 local first = true
 local function OnUpdate()
-    --for some reason if UI Scaling is in effect we cannot scale it in Load()
+    --for some reason if UI Scaling is in effect we cannot set the Anchor in Load()
     if first then
         first = false
         dawnscanvas:SetWndPosition(settings.WinX, settings.WinY)
     end
-
 end
 
 
