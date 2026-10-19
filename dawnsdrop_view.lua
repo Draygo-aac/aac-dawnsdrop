@@ -1,9 +1,8 @@
-dawnscanvas = api.Interface:CreateEmptyWindow("DawnsdropCheck") -- , "UIParent"
+local dawnscanvas = api.Interface:CreateEmptyWindow("DawnsdropCheck") -- , "UIParent"
 dawnscanvas:AddAnchor("TOPLEFT", "UIParent", 330, 20)
 local windowheight = 54
 --20 + (46 * 7)
 dawnscanvas:SetExtent(342, windowheight)
-
 
 function dawnscanvas:SetWndPosition(x, y)
     dawnscanvas:RemoveAllAnchors()
@@ -14,10 +13,9 @@ function addIcon(dawnscanvas, num)
    --icon:Show(true)
    --F_SLOT.ApplySlotSkin(icon, icon.back, SLOT_STYLE.EQUIP_ITEM)
    icon:AddAnchor("TOP", dawnscanvas, "TOPLEFT", (44 * num) - 10, 4 )
-
+   icon:Clickable(false)
    return icon
 end
-
 
 dawnscanvas.childitemIcons = {}
 for i=1, 20 do
@@ -29,8 +27,6 @@ dawnscanvas.bg:SetTextureInfo("bg_quest")
 dawnscanvas.bg:SetColor(0, 0, 0, 0.5)
 dawnscanvas.bg:AddAnchor("TOPLEFT", dawnscanvas, 0, 0)
 dawnscanvas.bg:AddAnchor("BOTTOMRIGHT", dawnscanvas, 0, 0)  
-  
-
 
 function dawnscanvas:OnDragStart(arg)
   if arg == nil then
@@ -77,6 +73,5 @@ function dawnscanvas:Close()
         dawnscanvas:ReleaseHandler("OnDragStart") 
         dawnscanvas:ReleaseHandler("OnDragStop")
 end
-
 
 return dawnscanvas

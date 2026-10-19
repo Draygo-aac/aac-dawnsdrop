@@ -1,7 +1,9 @@
 local inventory = ADDON:GetContent(UIC.BAG)
 local alertItemsBtn
 
-checkButton = require('dawnsdrop/util/check_button')
+CreateCheckButton = api._Library.UI.CreateCheckButton
+CreateTooltip = api._Library.UI.CreateTooltip
+--checkButton = require('dawnsdrop/util/check_button')
 
 settings = api.GetSettings("dawnsdrop")
 
@@ -37,56 +39,6 @@ ALERT_BUTTTONSKIN = {
 	width = 40,
 	height = 40
 }
-local btnColor = {
-    normal = {
-    ConvertColor(209),
-    ConvertColor(192),
-    ConvertColor(172),
-    1
-    },
-    highlight = {
-    ConvertColor(233),
-    ConvertColor(197),
-    ConvertColor(155),
-    1
-    },
-    pushed = {
-    ConvertColor(200),
-    ConvertColor(168),
-    ConvertColor(129),
-    1
-    },
-    disabled = {
-    ConvertColor(120),
-    ConvertColor(120),
-    ConvertColor(120),
-    1
-    }
-}
-
-
-
-function CreateTooltipDrawable(widget)
-  local bg = widget:CreateNinePartDrawable(TEXTURE_PATH.HUD, "background")
-  bg:AddAnchor("TOPLEFT", widget, 0, -7)
-  bg:AddAnchor("BOTTOMRIGHT", widget, 0, -3)
-  bg:SetCoords(733, 169, 14, 15)
-  bg:SetInset(7, 7, 6, 7)
-  widget.bg = bg
-end
-
-function CreateTooltip(widget, text)
-	local label = widget:CreateChildWidget("label", "toolTip", 0, true)
-	label:SetText(text)
-	label.style:SetAlign(1)
-	CreateTooltipDrawable(label)
-	label:SetHeight(FONT_SIZE.LARGE + 14)
-	label:SetWidth(label.style:GetTextWidth(text) + 14)
-	ApplyTextColor(label, btnColor.normal)
-	label:AddAnchor("BOTTOM", widget, "TOP", 0, 4)
-	widget.tooltip = label
-	label:Show(false)
-end
 
 function LoadFile()
 
@@ -133,8 +85,6 @@ if settings.filter ~= nil then
 	SaveData(charsettings)
 end
 
-
-
 if charsettings.defaults == nil then
 	charsettings.defaults = true
 end
@@ -160,10 +110,6 @@ else
 	end
 end
 
-
-
-
-
 --api.Log:Info(inventory)
 if inventory.alertItemsBtn ~= nil then
 	--api.Log:Info("Alert button already loaded")
@@ -183,17 +129,8 @@ inventory.alertItemsBtn:RemoveAllAnchors()
 
 api.Interface:ApplyButtonSkin(inventory.alertItemsBtn, ALERT_BUTTTONSKIN)
 --inventory.alertItemsBtn.info = "Alert Items"
-CreateTooltip(inventory.alertItemsBtn, "Alert Items")
-function inventory.alertItemsBtn:OnEnter()
-	self.tooltip:Show(true)
-end
-inventory.alertItemsBtn:SetHandler("OnEnter", inventory.alertItemsBtn.OnEnter)
-function inventory.alertItemsBtn:OnLeave()
-	self.tooltip:Show(false)
-end
-inventory.alertItemsBtn:SetHandler("OnLeave", inventory.alertItemsBtn.OnLeave)
---inventory.alertItemsBtn:SetTooltip("Alert Items")
---api.Interface:ApplyButtonSkin(inventory.alertItemsBtn, BUTTON_BASIC.DEFAULT)
+CreateTooltip("alerttooltip", inventory.alertItemsBtn, "Alert Items")
+
 inventory.alertItemsBtn:AddAnchor("BOTTOMLEFT", inventory, 242, -18)
 
 function alertItemsBtn:SetCallback(delegate)
@@ -242,21 +179,17 @@ function ShowAlertItemWnd()
 end
 alertItemsBtn:SetCallback(ShowAlertItemWnd)
 
-
-
 function addIcon(window, row, col)
 	local num = row * 5 + col
-   icon = CreateItemIconButton("Item" .. num, window)
-   F_SLOT.ApplySlotSkin(icon, icon.back, SLOT_STYLE.BAG_DEFAULT)
-   icon:AddAnchor("TOP", window, "TOPLEFT", (44 * col) + 15, 48 + (row * 44))
-   icon.num = num
-   return icon
+	icon = CreateItemIconButton("Item" .. num, window)
+	F_SLOT.ApplySlotSkin(icon, icon.back, SLOT_STYLE.BAG_DEFAULT)
+	icon:AddAnchor("TOP", window, "TOPLEFT", (44 * col) + 15, 48 + (row * 44))
+	icon.num = num
+	return icon
 end
 alertItemWnd.items = {}
 
 function ClearAlertItem(ev)
-
-
 	F_SLOT.SetIconBackGround(alertItemWnd.items[ev.num], nil)
 
 	charsettings.filter[ev.num] = {
@@ -274,28 +207,22 @@ function AddAlertItem(ev, bagitem)
 	if bagitem.itemType == nil then
 		return
 	end
+
 	F_SLOT.SetIconBackGround(alertItemWnd.items[ev.num], bagitem.path)
 	--alertItemWnd.items[ev.num].helditem = bagitem.itemType
 	charsettings.filter[ev.num] = {
 		itemTypeString = string.format("%.f", bagitem.itemType),
 		itemType = math.floor(bagitem.itemType), 
 		path = bagitem.path
-		}
-	
-	
+	}
+
 	api.Cursor:ClearCursor()
 	SaveData(charsettings)
 	GenerateFilter()
 	TriggerCallback()
 end
 
-
-
 function TryAddAlertItem(ev)
-
-	--api.Log:Info(ev.num)
-	--api.Log:Info(api.Cursor:GetCursorPickedBagItemIndex())
-
 	local bagnum = api.Cursor:GetCursorPickedBagItemIndex()
 	--api.Log:Info(tostring(bagnum))
 	if bagnum == 0 then
@@ -304,7 +231,7 @@ function TryAddAlertItem(ev)
 	end
 	local bagitem = api.Bag:GetBagItemInfo(1, bagnum)
 
-	--api.Log:Info(bagitem.item_impl)
+	--api.Log:Info(bagitem.itemType)
 	--api.File:Write("bagitem.txt", bagitem)
 	if bagitem.item_impl == "weapon" then
 		AddAlertItem(ev, bagitem)
@@ -321,7 +248,6 @@ function TryAddAlertItem(ev)
 end
 
 function OnClickAlertItem(ev, clicktype)
-	--api.Log:Info(tostring(clicktype))
 	if clicktype == "RightButton" then
 		ClearAlertItem(ev)
 		return
@@ -348,21 +274,18 @@ for i = 0, 9 do
 end
 GenerateFilter()
 
-
-
 local defaultslabel = alertItemWnd:CreateChildWidget("label", "defaultsLabel", 0, true)
 defaultslabel:AddAnchor("BOTTOMLEFT", alertItemWnd, 115, -50)
 defaultslabel:SetText("Filter Defaults:")
 defaultslabel.style:SetAlign(2)
 ApplyTextColor(defaultslabel, FONT_COLOR.DEFAULT)
 
-alertItemWnd.defaultscheckbutton = checkButton.CreateCheckButton("defaultscheckbutton", alertItemWnd, nil)
+alertItemWnd.defaultscheckbutton = CreateCheckButton("defaultscheckbutton", alertItemWnd, nil)
 alertItemWnd.defaultscheckbutton:AddAnchor("BOTTOMLEFT", alertItemWnd, 120, -35)
 alertItemWnd.defaultscheckbutton:SetButtonStyle("default")
 alertItemWnd.defaultscheckbutton:Show(true)
 alertItemWnd.defaultscheckbutton.onClickDel = nil
 function OnCheckChanged()
-	--api.Log:Info("Clicked")
 	charsettings.defaults = alertItemWnd.defaultscheckbutton:GetChecked()
 	SaveData(charsettings)
 	TriggerCallback()
@@ -376,14 +299,13 @@ emptyslotslabel:AddAnchor("BOTTOMLEFT", alertItemWnd, 115, -35)
 emptyslotslabel:SetText("Empty Slots:")
 emptyslotslabel.style:SetAlign(2)
 ApplyTextColor(emptyslotslabel, FONT_COLOR.DEFAULT)
-alertItemWnd.emptyslotscheckbutton = checkButton.CreateCheckButton("emptyslotscheckbutton", alertItemWnd, nil)
+alertItemWnd.emptyslotscheckbutton = CreateCheckButton("emptyslotscheckbutton", alertItemWnd, nil)
 
 alertItemWnd.emptyslotscheckbutton:AddAnchor("BOTTOMLEFT", alertItemWnd, 120, -20)
 alertItemWnd.emptyslotscheckbutton:SetButtonStyle("default")
 alertItemWnd.emptyslotscheckbutton:Show(true)
 alertItemWnd.emptyslotscheckbutton.onClickDel = nil
 function OnEmptyCheckChanged()
-	--api.Log:Info("Clicked")
 	charsettings.emptyslots = alertItemWnd.emptyslotscheckbutton:GetChecked()
 	SaveData(charsettings)
 	TriggerCallback()
@@ -392,20 +314,14 @@ end
 alertItemWnd.emptyslotscheckbutton:SetHandler("OnCheckChanged", OnEmptyCheckChanged)
 alertItemWnd.emptyslotscheckbutton:SetChecked(charsettings.emptyslots)
 
-
-
 function inventory:CloseAddon()
-	--api.Log:Info("Closing")
 	alertItemsBtn:ReleaseHandler("OnClick")
-
+	alertItemsBtn:Show(false)
 	alertItemWnd:Show(false)
 	alertItemWnd = nil
-	--inventory.alertItemsBtn:Show(false)
-	--inventory.alertItemsBtn = nil
 end
 
 function inventory:GetAlertItemList()
-
 	return filterlist
 end
 function inventory:GetFilterDefaults()

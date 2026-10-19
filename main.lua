@@ -1,9 +1,9 @@
 local api = require("api")
-
-function string:endswith(ending)
-    return ending == "" or self:sub(-#ending) == ending
+local function endswith(value, ending)
+    return ending == "" or value:sub(-#ending) == ending
 end
-settings = {}
+
+local settings = {}
 -- First up is the addon definition!
 -- This information is shown in the Addon Manager.
 -- You also specify "unload" which is the function called when unloading your addon.
@@ -11,7 +11,7 @@ local dawnsdrop_addon = {
   name = "Dawnsdrop Check",
   author = "Delarme",
   desc = "Checks if you have dawnsdrop equipped",
-  version = "1.5"
+  version = "1.5.0.1"
 }
 
 local defaultX = 330
@@ -23,9 +23,6 @@ local function IsDawnsDropItem(item, slotIdx)
     if item == nil then
         return false
     end
-
-
-    --api.Log:Info(item.name .. " " .. tostring(item.itemType))
 
     if invscreen ~= nil then
         list = invscreen:GetAlertItemList()
@@ -56,10 +53,10 @@ local function IsDawnsDropItem(item, slotIdx)
         end
     end
 
-    if item.name:endswith("Fishing Rod") then
+    if endswith(item.name, "Fishing Rod") then
         return true
     end
-    if item.name:endswith("Swimfins") then
+    if endswith(item.name, "Swimfins") then
         return true
     end
     if item.name == "Eternal Defiance" then
@@ -69,7 +66,7 @@ local function IsDawnsDropItem(item, slotIdx)
         return false
     end
 
-    if item.equipSetInfo.equipSetItemInfoDesc:endswith("Dawnsdrop Set") then
+    if endswith(item.equipSetInfo.equipSetItemInfoDesc, "Dawnsdrop Set") then
         return true
     end
     if item.equipSetInfo.equipSetItemInfoDesc == "Lullaby Pajamas" then
@@ -79,15 +76,8 @@ local function IsDawnsDropItem(item, slotIdx)
 return false
 end
 
--- The Load Function is called as soon as the game loads its UI. Use it to initialize anything you need!
-
-
-
-
 local dawnscanvas
 local windowheight = 54
-
-
 
 local EQUIP_SLOTS = {
 --left values in order they appear on eq screen
@@ -118,7 +108,7 @@ local EQUIP_SLOTS = {
 }
 local prev = {}
 
-function GetSlotBackground(slotIdx)
+local function GetSlotBackground(slotIdx)
     if slotIdx <= 21 then
         return SLOT_STYLE.EQUIP_ITEM[slotIdx]
     end
@@ -130,6 +120,7 @@ function GetSlotBackground(slotIdx)
     end
     return nil
 end
+
 local function HudUpdate()
     local current = {}
     for i=1, 20 do
@@ -176,52 +167,34 @@ local function HudUpdate()
                 return
             end
         end
-        
     end
     -- changed
     if #prev == 0 then
-        
         api:Emit("DAWNSDROP_ALERT_BEGIN")
-        --api.Log:Info("Fire Begin Event")
     end
     prev = current
     if #current == 0 then
-        
         api:Emit("DAWNSDROP_ALERT_UPDATE", current)
         api:Emit("DAWNSDROP_ALERT_END")
-        --api.Log:Info("Fire Update End Event")
-
     else
-        
         api:Emit("DAWNSDROP_ALERT_UPDATE", current)
-        --api.Log:Info("Fire Update Event")
-
     end
-
-
 end
 
 local function OnEvent(this, event, ...)
-    
-    --api.Log:Info(event)
     if event == "UNIT_EQUIPMENT_CHANGED" then
         HudUpdate()
     end
 end
 
-
-
---settings.WinX = 330
---settings.WinY = 20
-
-function LoadFile()
+local function LoadFile()
 
 	local file = "dawnsdrop\\data\\_global.lua"
 	return api.File:Read(file)
 
 end
 
-function LoadData()
+local function LoadData()
 	local res, settingsdata = pcall(LoadFile)
 	if res == true then
 		return settingsdata
@@ -230,25 +203,26 @@ function LoadData()
 	return nil
 end
 
-function SaveData(settings)
-
-
+local function SaveData(settings)
 	api.File:Write("dawnsdrop\\data\\_global.lua", settings)
 end
 
-
 local function UpdatePos(x, y)
-
-
     settings.WinX = math.floor(x)
     settings.WinY = math.floor(y)
 
     dawnscanvas:SetWndPosition(settings.WinX, settings.WinY)
     SaveData(settings)
-    --api.Log:Info(settings)
 end
 
-
+local first = true
+local function OnUpdate()
+    --for some reason if UI Scaling is in effect we cannot set the Anchor in Load()
+    if first then
+        first = false
+        dawnscanvas:SetWndPosition(settings.WinX, settings.WinY)
+    end
+end
 local function Load() 
   
     api.Log:Info("Loading dawnsdrop check...")
@@ -275,28 +249,18 @@ local function Load()
     --dawnscanvas:RegisterEvent("DAWNSDROP_ALERT_BEGIN")
     --dawnscanvas:RegisterEvent("DAWNSDROP_ALERT_UPDATE")
     --dawnscanvas:RegisterEvent("DAWNSDROP_ALERT_END")
-    
-
 
     invscreen = require("dawnsdrop/inventory_screen_mod")
     invscreen.alertItemWnd.updateCallback = HudUpdate
-
+    
     HudUpdate()
+    api.On("UPDATE", OnUpdate)
 end
-local first = true
-local function OnUpdate()
-    --for some reason if UI Scaling is in effect we cannot set the Anchor in Load()
-    if first then
-        first = false
-        dawnscanvas:SetWndPosition(settings.WinX, settings.WinY)
-    end
-end
-
 
 -- Unload is called when addons are reloaded.
 -- Here you want to destroy your windows and do other tasks you find useful.
 local function Unload()
-    
+    api.Log:Info("Dawnsdrop unloaded")
     if dawnscanvas ~= nil then
         dawnscanvas:Show(false)
         dawnscanvas:Close()
@@ -308,7 +272,7 @@ local function Unload()
        invscreen:CloseAddon()
     end
 end
-api.On("UPDATE", OnUpdate)
+
 -- Here we make sure to bind the functions we defined to our addon. This is how the game knows what function to use!
 dawnsdrop_addon.OnLoad = Load
 dawnsdrop_addon.OnUnload = Unload
