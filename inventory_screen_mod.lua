@@ -1,6 +1,11 @@
 local inventory = ADDON:GetContent(UIC.BAG)
 local alertItemsBtn
 
+if api._Library == nil then
+  api.Log:Err("Addon Library Missing. Install the Addon Library to use Dawnsdrop Check")
+  return nil
+end
+
 CreateCheckButton = api._Library.UI.CreateCheckButton
 CreateTooltip = api._Library.UI.CreateTooltip
 --checkButton = require('dawnsdrop/util/check_button')
