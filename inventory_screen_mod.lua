@@ -125,10 +125,15 @@ if inventory.alertItemsBtn ~= nil then
 	inventory.alertItemsBtn = nil
 end
 
+
+
 if inventory.alertItemsBtn == nil then
 	alertItemsBtn = inventory:CreateChildWidget("button", "alertitemsButton", 0, true)
 	inventory.alertItemsBtn = alertItemsBtn
+	
+
 end
+
 inventory.alertItemsBtn:RemoveAllAnchors()
 --inventory.alertItemsBtn:SetText("Alert Items")
 
@@ -136,7 +141,7 @@ api.Interface:ApplyButtonSkin(inventory.alertItemsBtn, ALERT_BUTTTONSKIN)
 --inventory.alertItemsBtn.info = "Alert Items"
 CreateTooltip("alerttooltip", inventory.alertItemsBtn, "Alert Items")
 
-inventory.alertItemsBtn:AddAnchor("BOTTOMLEFT", inventory, 242, -18)
+inventory.alertItemsBtn:AddAnchor("TOPLEFT", inventory, 16, 8)
 
 function alertItemsBtn:SetCallback(delegate)
 	--api.Log:Info("SetCallback")
